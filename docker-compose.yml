@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+  
+  app:
+    build:
+      args:
+        user: listas
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: listas-enlazadas
+    container_name: listas-enlazadas-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./app:/var/www
+    networks:
+      - listas-enlazadas
+
+  db:
+    image: mysql:5.7
+    container_name: listas-enlazadas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: tesis
+      MYSQL_ROOT_PASSWORD: 0l1v3tt1_@lv@r32
+      MYSQL_PASSWORD: 0l1v3tt1_@lv@r32_listas
+      MYSQL_USER: listas
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks: 
+      - listas-enlazadas
+
+  nginx:
+    image: nginx:alpine
+    container_name: listas-enlazadas-server
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./app:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d
+    networks:
+      - listas-enlazadas
+
+networks:
+  listas-enlazadas:
+    driver: bridge
